@@ -21,11 +21,35 @@ export default function App() {
     setRepositories(response.data);
   }
 
-	async function handleLikeRepository(id) {
+  //** | Função abaixo funciona no APP, porém não funciona no TEST
+  //** |
+  //** | Erro na linha 68 do TEST:
+  //** | "expect(getByTestId(`repository-likes-${repositoryId}`)).toHaveTextContent("1 curtida");"
+  
+  /* async function handleLikeRepository(id) {
 		await api.post(`repositories/${id}/like`);
 
 		handleListRepositories();
-	}
+  } */
+
+  
+  //** | Função abaixo funciona no TEST, porém não funciona no APP
+  //** |
+  //** | "TypeError: Cannot read property 'map' of undefined"
+
+  async function handleLikeRepository(id) {
+    const res = await api.post(`repositories/${id}/like`);
+    
+    const repoUpdate = repositories.map(repo => {
+      if (repo.id === id) {
+        return res.data;
+      } else {
+        return repo;
+      }
+    });
+
+		setRepositories(repoUpdate);
+  }
 
 	useEffect(() => {
 		handleListRepositories()
