@@ -38,17 +38,16 @@ export default function App() {
   //** | "TypeError: Cannot read property 'map' of undefined"
 
   async function handleLikeRepository(id) {
-    const res = await api.post(`repositories/${id}/like`);
-    
-    const repoUpdate = repositories.map(repo => {
-      if (repo.id === id) {
-        return res.data;
-      } else {
-        return repo;
-      }
-    });
+    let likesData;
 
-		setRepositories(repoUpdate);
+    await api.post(`repositories/${id}/like`).then((resolve) => likesData = resolve.data.likes);
+    
+		const repoUpdate = repositories.map(repository => (
+      repository.id === id ? { likes: likesData, ...repository } : repository
+    ));
+
+    setRepositories(repoUpdate);
+    handleListRepositories()
   }
 
 	useEffect(() => {
@@ -63,31 +62,31 @@ export default function App() {
         <FlatList
 					data={repositories}
 					keyExtractor={ repository => repository.id }
-					renderItem={({ item }) => (
+					renderItem={({ item: repository }) => (
           <View style={styles.repositoryContainer}>
-            <Text style={styles.repository}>{item.title}</Text>
+            <Text style={styles.repository}>{repository.title}</Text>
 
             <View style={styles.techsContainer}>
-              {item.techs.map((tech, i) => (
+              {repository.techs.map((tech, i) => (
                 <Text key={i} style={styles.tech}>{tech}</Text>
               ))}
             </View>
 
-            {!!item.likes && (
+            {!!repository.likes && (
               <View style={styles.likesContainer}>
                 <Text
                   style={styles.likeText}
-                  testID={`repository-likes-${item.id}`}
+                  testID={`repository-likes-${repository.id}`}
                 >
-                  {item.likes} {item.likes > 1 ? 'curtidas' : 'curtida' }
+                  {repository.likes} curtida{repository.likes > 1 && 's'}
                 </Text>
               </View>
             )}
 
             <TouchableOpacity
               style={styles.button}
-              onPress={() => handleLikeRepository(item.id)}
-              testID={`like-button-${item.id}`}
+              onPress={() => handleLikeRepository(repository.id)}
+              testID={`like-button-${repository.id}`}
             >
               <Text style={styles.buttonText}>Curtir</Text>
             </TouchableOpacity>
